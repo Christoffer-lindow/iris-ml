@@ -2,7 +2,7 @@ import unittest
 from statistics import stdev, mean
 from naivebayes import NaiveBayes
 from datamanipulations import seperate_classes, get_values_for_col
-from math import log, exp
+from statutils import summarize_col, calc_p, pdf, normalize_p
 
 
 class DataManipulationTest(unittest.TestCase):
@@ -40,7 +40,7 @@ class BayesTest(unittest.TestCase):
         input_list = [1.4, 1.3, 1.5, 1.4, 1.7, 1.4]
         mean_expected = 1.45
         std_expected = 0.14
-        mean_actual, std_actual = NaiveBayes.summarize_col(input_list)
+        mean_actual, std_actual = summarize_col(input_list)
         self.assertEqual(mean_actual, mean_expected)
         self.assertAlmostEqual(std_actual, std_expected,2)
 
@@ -49,7 +49,7 @@ class BayesTest(unittest.TestCase):
         stdev = 0.14
         x = 1.6
         expected = 1.601
-        actual = NaiveBayes.pdf(x, mean_val, stdev)
+        actual = pdf(x, mean_val, stdev)
         self.assertAlmostEqual(actual, expected, 2)
 
     def test_pdf_case_2(self):
@@ -57,7 +57,7 @@ class BayesTest(unittest.TestCase):
         stdev = 0.08
         x = 8
         expected = 1.970e-09
-        actual = NaiveBayes.pdf(x, mean_val, stdev)
+        actual = pdf(x, mean_val, stdev)
         self.assertAlmostEqual(actual, expected, 2)
 
     def test_pdf_case_3(self):
@@ -65,7 +65,7 @@ class BayesTest(unittest.TestCase):
         stdev = 0.52
         x = 1.6
         expected = 3.424e-07
-        actual = NaiveBayes.pdf(x, mean_val, stdev)
+        actual = pdf(x, mean_val, stdev)
         self.assertAlmostEqual(actual, expected, 2)
 
     def test_pdf_case_4(self):
@@ -73,20 +73,20 @@ class BayesTest(unittest.TestCase):
         stdev = 0.24
         x = 0.8
         expected = 0.081
-        actual = NaiveBayes.pdf(x, mean_val, stdev)
+        actual = pdf(x, mean_val, stdev)
         self.assertAlmostEqual(actual, expected, 0)
 
     def test_get_p_case_1(self):
         input_arr = [1.601, 1.970e-09]
         expected = 3.154e-09
-        actual = NaiveBayes.calc_p(input_arr)
-        self.assertAlmostEqual(actual, expected)
+        actual = calc_p(input_arr)
+        self.assertAlmostEqual(actual, expected,2)
 
     def test_get_p_case2(self):
         input_arr = [3.424e-07, 0.081]
         expected = 2.776e-08
-        actual = NaiveBayes.calc_p(input_arr)
-        self.assertAlmostEqual(actual, expected)
+        actual = calc_p(input_arr)
+        self.assertAlmostEqual(actual, expected,2)
 
     def test_normalize_p_case1(self):
         input_arr = [3.154e-09, 2.776e-08]
@@ -94,8 +94,8 @@ class BayesTest(unittest.TestCase):
         x_2 = 2.776e-08
         expected_p1 = 0.102
         expected_p2 = 0.898
-        p1 = NaiveBayes.normalize_p(x_1, input_arr)
-        p2 = NaiveBayes.normalize_p(x_2, input_arr)
+        p1 = normalize_p(x_1, input_arr)
+        p2 = normalize_p(x_2, input_arr)
         self.assertAlmostEqual(p1, expected_p1, 2)
         self.assertAlmostEqual(p2, expected_p2, 2)
         self.assertAlmostEqual(p1+p2, 1, 10)
