@@ -1,7 +1,5 @@
-from math import exp, sqrt, pi, log
-from statistics import mean, stdev
 from datamanipulations import get_values_for_col, seperate_classes
-
+from statutils import sumarize_p,summarize_col,normalize_probabilities,pdf
 
 class NaiveBayes:
     def __init__(self):
@@ -13,6 +11,28 @@ class NaiveBayes:
         seperated_classes = seperate_classes(x)
         self.summarize_classes(seperated_classes)
         self.labels = y
+
+    def summarize_classes(self,seperated_classes):
+        for i in range(len(seperated_classes)):
+            self.len_of_data_rows = len(seperated_classes[i+1][0])
+            self.model[i+1] = list()
+            for j in range(self.len_of_data_rows):
+                col = get_values_for_col(j, seperated_classes[i+1])
+                mean_val, stddev_val = summarize_col(col)
+                self.model[i+1].append((mean_val, stddev_val))
+
+    def calculate_class_probabilities(self,row):
+        probabilities = dict()
+        for class_value, class_summaries in self.model.items():
+            probabilities[class_value] = list()
+            for i in range(len(class_summaries)):
+                mean, stdev = class_summaries[i]
+                probabilities[class_value].append(
+                    pdf(row[i], mean, stdev))
+
+        sum_probabilities = sumarize_p(probabilities)
+
+        return normalize_probabilities(probabilities, sum_probabilities)
 
     def predict(self, rows):
         predictions = list()
@@ -49,57 +69,3 @@ class NaiveBayes:
             matrix[index_map[predicted]][index_map[actual]] += 1
         return matrix
 
-    def calculate_class_probabilities(self, row):
-        probabilities = dict()
-        for class_value, class_summaries in self.model.items():
-            probabilities[class_value] = list()
-            for i in range(len(class_summaries)):
-                mean, stdev = class_summaries[i]
-                probabilities[class_value].append(
-                    self.pdf(row[i], mean, stdev))
-
-        sum_probabilities = self.sumarize_p(probabilities)
-
-        return self.normalize_probabilities(probabilities, sum_probabilities)
-
-    def pdf(self, x, mean, stdev):
-        left = (1 / (sqrt(2 * pi)*stdev))
-        right = exp(-((x-mean)**2)/(2 * stdev**2))
-        return left * right
-
-    def summarize_col(self, arr):
-        col_mean = mean(arr)
-        col_stdev = stdev(arr)
-        return col_mean, col_stdev
-
-    def summarize_classes(self, seperated_classes):
-        for i in range(len(seperated_classes)):
-            self.len_of_data_rows = len(seperated_classes[i+1][0])
-            self.model[i+1] = list()
-            for j in range(self.len_of_data_rows):
-                col = get_values_for_col(j, seperated_classes[i+1])
-                mean_val, stddev_val = self.summarize_col(col)
-                self.model[i+1].append((mean_val, stddev_val))
-
-    def sumarize_p(self, probabilities):
-        sum_probabilities = list()
-        for i in range(len(probabilities)):
-            probabilities[i+1] = self.calc_p(probabilities[i+1])
-            sum_probabilities.append(probabilities[i+1])
-
-        return sum_probabilities
-
-    def calc_p(self, pdf_arr):
-        product = 1
-        for num in pdf_arr:
-            product += log(num, 10)
-        return exp(product)
-
-    def normalize_p(self, x, pdf_arr):
-        return x / sum([(val) for val in pdf_arr])
-
-    def normalize_probabilities(self, probabilities, sum_probabilities):
-        for i in range(len(probabilities)):
-            probabilities[i +
-                          1] = self.normalize_p(probabilities[i+1], sum_probabilities)
-        return probabilities
